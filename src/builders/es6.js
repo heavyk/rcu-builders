@@ -1,11 +1,16 @@
+import rcu from 'rcu';
 import createBody from '../utils/createBody';
 
-export default function es6 ( definition ) {
+export default function es6 ( definition, options = {} ) {
 	var imports,
 		importBlock = '',
 		dependencies,
 		dependencyBlock = '',
+		{ intro, body, outro } = createBody( definition ),
+		beforeScript,
+		afterScript,
 		builtModule,
+		exportBlock,
 		counter = 0;
 
 	imports = [ `import Ractive from 'ractive';` ];
@@ -41,15 +46,36 @@ function require ( path ) {
 `;
 	}
 
-	if ( imports.length ) {
-		importBlock = imports.join( '\n\t' ) + ';\n\n';
-	}
+	importBlock = imports.join( '\n' );
+	exportBlock = 'export default __export__;';
 
-	builtModule =
-		importBlock +
-		dependencyBlock +
-		createBody( definition ) +
-		'export default __export__;';
+	beforeScript = [
+		importBlock,
+		dependencyBlock,
+		intro
+	].join( '\n' );
+
+	afterScript = [
+		outro,
+		exportBlock
+	].join( '\n' );
+
+	builtModule = [
+		beforeScript,
+		body,
+		afterScript
+	].join( '\n' );
+
+	if ( options.sourceMap ) {
+		let sourceMap = rcu.generateSourceMap( definition, {
+			padding: beforeScript.split( '\n' ).length,
+			file: options.sourceMapFile,
+			source: options.sourceMapSource,
+			content: definition.source
+		});
+
+		builtModule += '\n\/\/# sourceMappingURL=' + sourceMap.toUrl();
+	}
 
 	return builtModule;
 }

@@ -1,7 +1,7 @@
 import createBody from '../utils/createBody';
 
 export default function amd ( definition ) {
-	var dependencies, builtModule;
+	var dependencies, builtModule, { intro, body, outro } = createBody( definition );
 
 	dependencies = definition.imports.map( getImportPath ).concat( definition.modules );
 
@@ -12,7 +12,9 @@ export default function amd ( definition ) {
 	${dependencies.map( getDependencyName ).concat( 'require', 'Ractive' ).join( ',\n\t' )}
 ){
 
-${createBody( definition )}
+${intro}
+${body}
+${outro}
 
 	return __export__;
 });`;

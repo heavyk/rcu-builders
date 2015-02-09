@@ -2,7 +2,7 @@ import CleanCSS from 'clean-css';
 import toSource from 'tosource';
 
 export default function createBody ( definition ) {
-	var body = '' +
+	var intro = '' +
 		'var __options__ = {\n' +
 		'	template: ' + toSource( definition.template, null, '' ) + ',\n' +
 		( definition.css ?
@@ -14,19 +14,19 @@ export default function createBody ( definition ) {
 		'__prop__,\n' +
 		'__export__;';
 
-	if ( definition.script ) {
-		body += '\n' + definition.script + '\n' +
-`if ( typeof component.exports === "object" ) {
+	var body = definition.script;
+
+	var outro = `if ( typeof component.exports === "object" ) {
 	for ( __prop__ in component.exports ) {
 		if ( component.exports.hasOwnProperty(__prop__) ) {
 			__options__[__prop__] = component.exports[__prop__];
 		}
 	}
-}`;
-	}
+}
 
-	body += '__export__ = Ractive.extend( __options__ );\n';
-	return body;
+__export__ = Ractive.extend( __options__ );\n`;
+
+	return { intro, body, outro };
 }
 
 function getImportKeyValuePair ( imported, i ) {
