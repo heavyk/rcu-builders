@@ -126,7 +126,6 @@ function es6(definition) {
   builtModule = [beforeScript, body, afterScript].join("\n");
 
   if (options.sourceMap) {
-    console.log("\ngenerating sourcemap\n");
     var sourceMap = rcu.generateSourceMap(definition, {
       padding: beforeScript.split("\n").length,
       file: options.sourceMapFile,
