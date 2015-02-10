@@ -66,7 +66,7 @@ function require ( path ) {
 		afterScript
 	].join( '\n' );
 
-	if ( options.sourceMap ) {
+	if ( options.sourceMap && definition.script ) {
 		let sourceMap = rcu.generateSourceMap( definition, {
 			padding: beforeScript.split( '\n' ).length,
 			file: options.sourceMapFile,
