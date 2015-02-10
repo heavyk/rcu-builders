@@ -31,19 +31,22 @@ export default function es6 ( definition, options = {} ) {
 		});
 
 		dependencyBlock =
-`var __dependencies__ = {
-	${dependencies.join( ',\n\t' )}
-};
+`(function () {
+	var __dependencies__ = {
+		${dependencies.join( ',\n\t' )}
+	};
 
-function require ( path ) {
-	if ( __dependencies__.hasOwnProperty( path ) ) {
-		return __dependencies__[ path ];
+	var require = function ( path ) {
+		if ( __dependencies__.hasOwnProperty( path ) ) {
+			return __dependencies__[ path ];
+		}
+
+		throw new Error( 'Could not find required module "' + path + '"' );
 	}
 
-	throw new Error( 'Could not find required module "' + path + '"' );
-}
-
 `;
+
+		outro += '\n})();\n\n';
 	}
 
 	importBlock = imports.join( '\n' );
@@ -51,8 +54,8 @@ function require ( path ) {
 
 	beforeScript = [
 		importBlock,
-		dependencyBlock,
-		intro
+		intro,
+		dependencyBlock
 	].join( '\n' );
 
 	afterScript = [

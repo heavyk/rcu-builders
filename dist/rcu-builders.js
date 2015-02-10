@@ -113,13 +113,15 @@ function es6(definition) {
       counter += 1;
     });
 
-    dependencyBlock = "var __dependencies__ = {\n\t" + dependencies.join(",\n\t") + "\n};\n\nfunction require ( path ) {\n\tif ( __dependencies__.hasOwnProperty( path ) ) {\n\t\treturn __dependencies__[ path ];\n\t}\n\n\tthrow new Error( 'Could not find required module \"' + path + '\"' );\n}\n\n";
+    dependencyBlock = "(function () {\n\tvar __dependencies__ = {\n\t\t" + dependencies.join(",\n\t") + "\n\t};\n\n\tvar require = function ( path ) {\n\t\tif ( __dependencies__.hasOwnProperty( path ) ) {\n\t\t\treturn __dependencies__[ path ];\n\t\t}\n\n\t\tthrow new Error( 'Could not find required module \"' + path + '\"' );\n\t}\n\n";
+
+    outro += "\n})();\n\n";
   }
 
   importBlock = imports.join("\n");
   exportBlock = "export default __export__;";
 
-  beforeScript = [importBlock, dependencyBlock, intro].join("\n");
+  beforeScript = [importBlock, intro, dependencyBlock].join("\n");
 
   afterScript = [outro, exportBlock].join("\n");
 
