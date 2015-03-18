@@ -1,19 +1,20 @@
 'use strict';
 
+var rcu = require('rcu');
+rcu = ('default' in rcu ? rcu['default'] : rcu);
 var CleanCSS = require('clean-css');
 CleanCSS = ('default' in CleanCSS ? CleanCSS['default'] : CleanCSS);
 var toSource = require('tosource');
 toSource = ('default' in toSource ? toSource['default'] : toSource);
 
 function createBody(definition) {
-  var body = "" + "var __options__ = {\n" + "\ttemplate: " + toSource(definition.template, null, "") + ",\n" + (definition.css ? "\tcss:" + JSON.stringify(new CleanCSS().minify(definition.css).styles) + ",\n" : "") + (definition.imports.length ? "\tcomponents:{" + definition.imports.map(getImportKeyValuePair).join(",\n") + "}\n" : "") + "},\n" + "component={},\n" + "__prop__,\n" + "__export__;";
+  var intro = "" + "var __options__ = {\n" + "\ttemplate: " + toSource(definition.template, null, "") + ",\n" + (definition.css ? "\tcss:" + JSON.stringify(new CleanCSS().minify(definition.css).styles) + ",\n" : "") + (definition.imports.length ? "\tcomponents:{" + definition.imports.map(getImportKeyValuePair).join(",\n") + "}\n" : "") + "},\n" + "component={},\n" + "__prop__,\n" + "__export__;";
 
-  if (definition.script) {
-    body += "\n" + definition.script + "\n" + "if ( typeof component.exports === \"object\" ) {\n\tfor ( __prop__ in component.exports ) {\n\t\tif ( component.exports.hasOwnProperty(__prop__) ) {\n\t\t\t__options__[__prop__] = component.exports[__prop__];\n\t\t}\n\t}\n}";
-  }
+  var body = definition.script;
 
-  body += "__export__ = Ractive.extend( __options__ );\n";
-  return body;
+  var outro = "if ( typeof component.exports === \"object\" ) {\n\tfor ( __prop__ in component.exports ) {\n\t\tif ( component.exports.hasOwnProperty(__prop__) ) {\n\t\t\t__options__[__prop__] = component.exports[__prop__];\n\t\t}\n\t}\n}\n\n__export__ = Ractive.extend( __options__ );\n";
+
+  return { intro: intro, body: body, outro: outro };
 }
 
 function getImportKeyValuePair(imported, i) {
@@ -29,11 +30,16 @@ function stringify(key) {
 }
 
 function amd(definition) {
-  var dependencies, builtModule;
+  var dependencies;var builtModule;var _createBody = createBody(definition);
+
+  var intro = _createBody.intro;
+  var body = _createBody.body;
+  var outro = _createBody.outro;
+
 
   dependencies = definition.imports.map(getImportPath).concat(definition.modules);
 
-  builtModule = "" + ("define([\n\t" + dependencies.map(quote).concat("\"require\"", "\"ractive\"").join(",\n\t") + "\n], function(\n\t" + dependencies.map(getDependencyName).concat("require", "Ractive").join(",\n\t") + "\n){\n\n" + createBody(definition) + "\n\n\treturn __export__;\n});");
+  builtModule = "" + ("define([\n\t" + dependencies.map(quote).concat("\"require\"", "\"ractive\"").join(",\n\t") + "\n], function(\n\t" + dependencies.map(getDependencyName).concat("require", "Ractive").join(",\n\t") + "\n){\n\n" + intro + "\n" + body + "\n" + outro + "\n\n\treturn __export__;\n});");
 
   return builtModule;
 }
@@ -53,7 +59,12 @@ function getDependencyName(imported, i) {
 exports.amd = amd;
 
 function cjs(definition) {
-  var requireStatements, builtModule;
+  var requireStatements;var builtModule;var _createBody = createBody(definition);
+
+  var intro = _createBody.intro;
+  var body = _createBody.body;
+  var outro = _createBody.outro;
+
 
   requireStatements = definition.imports.map(function (imported, i) {
     var path = imported.href.replace(/\.[a-zA-Z]+$/, "");
@@ -62,7 +73,7 @@ function cjs(definition) {
 
   requireStatements.unshift("Ractive = require('ractive')");
 
-  builtModule = "var " + requireStatements.join(",\n\t") + ";\n\n" + createBody(definition) + "module.exports = __export__;";
+  builtModule = "var " + requireStatements.join(",\n\t") + ";\n\n" + intro + body + outro + "module.exports = __export__;";
 
   return builtModule;
 }
@@ -70,7 +81,20 @@ function cjs(definition) {
 exports.cjs = cjs;
 
 function es6(definition) {
-  var imports, importBlock = "", dependencies, dependencyBlock = "", builtModule, counter = 0;
+  var options = arguments[1] === undefined ? {} : arguments[1];
+  var imports;
+  var importBlock = "";
+  var dependencies;
+  var dependencyBlock = "";var _createBody = createBody(definition);
+
+  var intro = _createBody.intro;
+  var body = _createBody.body;
+  var outro = _createBody.outro;
+  var beforeScript;
+  var afterScript;
+  var builtModule;
+  var exportBlock;
+  var counter = 0;
 
   imports = ["import Ractive from 'ractive';"];
 
@@ -89,14 +113,30 @@ function es6(definition) {
       counter += 1;
     });
 
-    dependencyBlock = "var __dependencies__ = {\n\t" + dependencies.join(",\n\t") + "\n};\n\nfunction require ( path ) {\n\tif ( __dependencies__.hasOwnProperty( path ) ) {\n\t\treturn __dependencies__[ path ];\n\t}\n\n\tthrow new Error( 'Could not find required module \"' + path + '\"' );\n}\n\n";
+    dependencyBlock = "(function () {\n\tvar __dependencies__ = {\n\t\t" + dependencies.join(",\n\t") + "\n\t};\n\n\tvar require = function ( path ) {\n\t\tif ( __dependencies__.hasOwnProperty( path ) ) {\n\t\t\treturn __dependencies__[ path ];\n\t\t}\n\n\t\tthrow new Error( 'Could not find required module \"' + path + '\"' );\n\t}\n\n";
+
+    outro += "\n})();\n\n";
   }
 
-  if (imports.length) {
-    importBlock = imports.join("\n\t") + ";\n\n";
-  }
+  importBlock = imports.join("\n");
+  exportBlock = "export default __export__;";
 
-  builtModule = importBlock + dependencyBlock + createBody(definition) + "export default __export__;";
+  beforeScript = [importBlock, intro, dependencyBlock].join("\n");
+
+  afterScript = [outro, exportBlock].join("\n");
+
+  builtModule = [beforeScript, body, afterScript].join("\n");
+
+  if (options.sourceMap && definition.script) {
+    var sourceMap = rcu.generateSourceMap(definition, {
+      padding: beforeScript.split("\n").length,
+      file: options.sourceMapFile,
+      source: options.sourceMapSource,
+      content: definition.source
+    });
+
+    builtModule += "\n//# sourceMappingURL=" + sourceMap.toUrl();
+  }
 
   return builtModule;
 }

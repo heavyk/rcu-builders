@@ -1,7 +1,7 @@
 var gobble = require( 'gobble' );
 
 module.exports = gobble( 'src' )
-	.transform( '6to5', {
+	.transform( 'babel', {
 		blacklist: [ 'modules', 'useStrict' ],
 		sourceMap: false
 	})
