@@ -2,7 +2,7 @@ var gobble = require( 'gobble' );
 
 module.exports = gobble( 'src' )
 	.transform( 'babel', {
-		blacklist: [ 'modules', 'useStrict' ],
+		blacklist: [ 'es6.modules', 'useStrict' ],
 		sourceMap: false
 	})
 	.transform( 'esperanto-bundle', {
