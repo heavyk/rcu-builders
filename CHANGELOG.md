@@ -1,5 +1,10 @@
 # changelog
 
+## 0.3.0
+
+* Add `preserveExtensions` option to ES6 builder
+* Tidy up
+
 ## 0.2.0
 
 * Wrap ES6 output in an IIFE

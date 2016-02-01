@@ -24,19 +24,19 @@ module.exports = function createModule ( source ) {
 	// there are three builders - AMD, CommonJS, ES6
 	var amdModule = builders.amd( definition );
 	var cjsModule = builders.cjs( definition );
-	var es6Module = builders.es6( definition );
+	var es6Module = builders.es6( definition, options );
 
 	// ...
 }
 ```
 
-## Building
+## Options
 
-```bash
-npm run build
-```
+Currently only the ES6 builder supports any options. They are:
 
-This will create `dist/rcu-builders.js`.
+* `sourceMap` – whether or not to create a sourcemap
+* `sourceMapFile` and `sourceMapSource` – populate the `file` and `sources` members of the sourcemap
+* `preserveExtensions` – whether to preserve the file extensions for imported components
 
 ## License
 

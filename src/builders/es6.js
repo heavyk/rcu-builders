@@ -1,28 +1,27 @@
-import rcu from 'rcu';
+import { generateSourceMap } from 'rcu';
 import createBody from '../utils/createBody';
 
 export default function es6 ( definition, options = {} ) {
-	var imports,
-		importBlock = '',
-		dependencies,
-		dependencyBlock = '',
-		{ intro, body, outro } = createBody( definition ),
-		beforeScript,
-		afterScript,
-		builtModule,
-		exportBlock,
-		counter = 0;
+	let { intro, body, outro } = createBody( definition );
 
-	imports = [ `import Ractive from 'ractive';` ];
+	let imports = [ `import Ractive from 'ractive';` ];
+	let counter = 0;
 
 	definition.imports.forEach( imported => {
-		var path = imported.href.replace( /\.[a-zA-Z]+$/, '' );
+		let path = imported.href;
+
+		if ( !options.preserveExtensions ) {
+			path = path.replace( /\.[a-zA-Z]+$/, '' );
+		}
+
 		imports.push( `import __import${counter}__ from '${path}';` );
 		counter += 1;
 	});
 
+	let dependencyBlock = '';
+
 	if ( definition.modules.length ) {
-		dependencies = [];
+		let dependencies = [];
 
 		definition.modules.forEach( path => {
 			imports.push( `import __import${counter}__ from '${path}';` );
@@ -49,28 +48,28 @@ export default function es6 ( definition, options = {} ) {
 		outro += '\n})();\n\n';
 	}
 
-	importBlock = imports.join( '\n' );
-	exportBlock = 'export default __export__;';
+	const importBlock = imports.join( '\n' );
+	const exportBlock = 'export default __export__;';
 
-	beforeScript = [
+	const beforeScript = [
 		importBlock,
 		intro,
 		dependencyBlock
 	].join( '\n' );
 
-	afterScript = [
+	const afterScript = [
 		outro,
 		exportBlock
 	].join( '\n' );
 
-	builtModule = [
+	let builtModule = [
 		beforeScript,
 		body,
 		afterScript
 	].join( '\n' );
 
 	if ( options.sourceMap && definition.script ) {
-		let sourceMap = rcu.generateSourceMap( definition, {
+		let sourceMap = generateSourceMap( definition, {
 			padding: beforeScript.split( '\n' ).length,
 			file: options.sourceMapFile,
 			source: options.sourceMapSource,
