@@ -7,7 +7,7 @@
   "repository": "https://github.com/ractivejs/rcu-builders",
   "dependencies": {
     "clean-css": "^3.4.9",
-    "rcu": "^0.5.1",
+    "rcu": "^0.6.1",
     "tosource": "^1.0.0"
   },
   "main": "dist/rcu-builders.cjs.js",
