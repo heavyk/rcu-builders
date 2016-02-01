@@ -1,11 +1,16 @@
 import createBody from '../utils/createBody';
+import deprecateToString from '../utils/deprecateToString';
+
+const getImportPath = imported => imported.href.replace( /\.[a-zA-Z]+$/, '' );
+const quote = str => `"${str}"`;
+const getDependencyName = ( x, i ) => `__import${i}__`;
 
 export default function amd ( definition ) {
-	var dependencies, builtModule, { intro, body, outro } = createBody( definition );
+	const { intro, body, outro } = createBody( definition );
 
-	dependencies = definition.imports.map( getImportPath ).concat( definition.modules );
+	const dependencies = definition.imports.map( getImportPath ).concat( definition.modules );
 
-	builtModule = '' +
+	const code = '' +
 `define([
 	${dependencies.map( quote ).concat( '"require"', '"ractive"' ).join( ',\n\t' )}
 ], function(
@@ -19,17 +24,7 @@ ${outro}
 	return __export__;
 });`;
 
-	return builtModule;
-}
+	// TODO sourcemap support
 
-function getImportPath ( imported ) {
-	return imported.href.replace( /\.[a-zA-Z]+$/, '' );
-}
-
-function quote ( str ) {
-	return `"${str}"`;
-}
-
-function getDependencyName ( imported, i ) {
-	return `__import${i}__`;
+	return deprecateToString( code, null, 'amd' );
 }

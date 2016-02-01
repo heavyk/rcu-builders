@@ -1,5 +1,6 @@
 import { generateSourceMap } from 'rcu';
 import createBody from '../utils/createBody';
+import deprecateToString from '../utils/deprecateToString';
 
 export default function es6 ( definition, options = {} ) {
 	let { intro, body, outro } = createBody( definition );
@@ -62,22 +63,21 @@ export default function es6 ( definition, options = {} ) {
 		exportBlock
 	].join( '\n' );
 
-	let builtModule = [
+	const code = [
 		beforeScript,
 		body,
 		afterScript
 	].join( '\n' );
 
-	if ( options.sourceMap && definition.script ) {
-		let sourceMap = generateSourceMap( definition, {
-			padding: beforeScript.split( '\n' ).length,
+	const map = options.sourceMap ?
+		generateSourceMap( definition, {
+			offset: beforeScript.split( '\n' ).length,
+			hires: options.hires !== false,
 			file: options.sourceMapFile,
 			source: options.sourceMapSource,
 			content: definition.source
-		});
+		}) :
+		null;
 
-		builtModule += '\n\/\/# sourceMappingURL=' + sourceMap.toUrl();
-	}
-
-	return builtModule;
+	return deprecateToString( code, map, 'es6' );
 }
