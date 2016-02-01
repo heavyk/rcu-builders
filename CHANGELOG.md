@@ -1,5 +1,9 @@
 # changelog
 
+## 0.4.0
+
+* Each builder returns a `{ code, map }` object, rather than appending any generated sourcemap as a data URI (only the `es6` builder currently allows you to generate a sourcemap)
+
 ## 0.3.0
 
 * Add `preserveExtensions` option to ES6 builder
