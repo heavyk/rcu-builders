@@ -20,6 +20,52 @@ describe( 'rcu-builders', () => {
 			};
 		});
 
+	describe( 'amd', () => {
+		function load ( file ) {
+			return sander.readFile( file, { encoding: 'utf-8' })
+				.then( source => parse( source ) )
+				.then( definition => {
+					const { code } = amd( definition );
+
+					return new Promise( fulfil => {
+						function define ( deps, callback ) {
+							const promises = deps.map( relativePath => {
+								if ( relativePath === 'require' ) {
+									return Promise.resolve({}); // TODO
+								}
+
+								let resolved;
+
+								try {
+									resolved = nodeResolve.sync( relativePath, {
+										base: path.dirname( file )
+									});
+
+									return Promise.resolve( require( resolved ) );
+								} catch ( err ) {
+									resolved = resolve( relativePath, file ) + '.html';
+									return load( resolved );
+								}
+							});
+
+							return Promise.all( promises )
+								.then( values => callback.apply( null, values ) )
+								.then( fulfil );
+						}
+
+						const fn = new Function( 'define', code );
+						fn( define );
+					});
+				});
+		}
+
+		samples.forEach( sample => {
+			it( sample.title, () => {
+				return load( sample.entry ).then( sample.test );
+			});
+		});
+	});
+
 	describe( 'cjs', () => {
 		let components = {};
 
