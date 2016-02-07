@@ -1,11 +1,14 @@
 /*global require */
 import * as sander from 'sander';
 import * as path from 'path';
+import * as assert from 'assert';
 import nodeResolve from 'resolve';
 import { transform } from 'babel-core';
+import { SourceMapConsumer } from 'source-map';
 import Ractive from 'ractive';
 import { init, parse, resolve } from 'rcu';
 import { describe, it } from 'mocha';
+import getLocation from './utils/getLocation.js';
 import { amd, cjs, es6 } from '..';
 
 init( Ractive );
@@ -73,7 +76,7 @@ describe( 'rcu-builders', () => {
 		}
 
 		samples.forEach( sample => {
-			it( sample.title, () => {
+			it( `executes ${sample.title}`, () => {
 				return load( sample.entry ).then( sample.test );
 			});
 		});
@@ -123,7 +126,7 @@ describe( 'rcu-builders', () => {
 		}
 
 		samples.forEach( sample => {
-			it( sample.title, () => {
+			it( `executes ${sample.title}`, () => {
 				return load( sample.entry ).then( sample.test );
 			});
 		});
@@ -178,9 +181,40 @@ describe( 'rcu-builders', () => {
 		}
 
 		samples.forEach( sample => {
-			it( sample.title, () => {
+			it( `executes ${sample.title}`, () => {
 				return load( sample.entry ).then( sample.test );
 			});
+		});
+
+		it( 'generates a sourcemap', () => {
+			const source = `
+<p>template</p>
+<p>template</p>
+<p>template</p>
+<p>template</p>
+<p>template</p>
+
+<script>
+	console.log( 42 );
+</script>
+`.slice( 1 );
+
+			const definition = parse( source );
+			const { code, map } = es6( definition, {
+				sourceMap: true,
+				sourceMapFile: 'Test.js',
+				sourceMapSource: 'Test.html'
+			});
+
+			const generatedLoc = getLocation( code, code.indexOf( 'log' ) );
+
+			const smc = new SourceMapConsumer( map );
+
+			const actualLoc = smc.originalPositionFor( generatedLoc );
+			const expectedLoc = getLocation( source, source.indexOf( 'log' ) );
+
+			assert.equal( actualLoc.line, expectedLoc.line );
+			assert.equal( actualLoc.column, expectedLoc.column );
 		});
 	});
 });

@@ -1,9 +1,9 @@
 import { generateSourceMap } from 'rcu';
-import createBody from '../utils/createBody';
+import createOutro from '../utils/createOutro';
 import deprecateToString from '../utils/deprecateToString';
 
 export default function es6 ( definition, options = {} ) {
-	let body = createBody( definition, 'export default' );
+	let outro = createOutro( definition );
 
 	let imports = [ `import Ractive from 'ractive';` ];
 	let counter = 0;
@@ -35,12 +35,15 @@ export default function es6 ( definition, options = {} ) {
 
 	const beforeScript = [
 		importBlock,
-		dependencyBlock
+		dependencyBlock,
+		'var component = { exports: {} };'
 	].join( '\n' );
 
 	const code = [
 		beforeScript,
-		body
+		definition.script,
+		outro,
+		'export default Ractive.extend( component.exports );'
 	].join( '\n' );
 
 	const map = options.sourceMap ?

@@ -1,20 +1,18 @@
 import CleanCSS from 'clean-css';
 import toSource from 'tosource';
 
-export default function createBody ( definition, exportMechanism ) {
+export default function createOutro ( definition ) {
 	const css = definition.css ? new CleanCSS().minify( definition.css ).styles : '';
 	const imports = definition.imports.map( getImportKeyValuePair );
 
-	return `
-var component = { exports: {} };
+	let outro = [
+		`component.exports.template = ${toSource( definition.template, null, '' )};`
+	];
 
-${definition.script}
+	if ( css ) outro.push( `component.exports.css = ${toSource( css )};` );
+	if ( imports.length ) outro.push( `component.exports.components = { ${imports.join( ', ')} };` );
 
-component.exports.template = ${toSource( definition.template, null, '' )};
-component.exports.css = ${toSource( css )};
-component.exports.components = { ${imports.join( ', ')} };
-
-${exportMechanism} Ractive.extend( component.exports );`.slice( 1 );
+	return outro.join( '\n' );
 }
 
 function getImportKeyValuePair ( imported, i ) {

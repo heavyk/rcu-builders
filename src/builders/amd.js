@@ -1,4 +1,4 @@
-import createBody from '../utils/createBody';
+import createOutro from '../utils/createOutro';
 import deprecateToString from '../utils/deprecateToString';
 
 const getImportPath = imported => imported.href.replace( /\.[a-zA-Z]+$/, '' );
@@ -6,7 +6,7 @@ const quote = str => `"${str}"`;
 const getDependencyName = ( x, i ) => `__import${i}__`;
 
 export default function amd ( definition ) {
-	const body = createBody( definition, 'return' );
+	const outro = createOutro( definition );
 
 	const dependencies = definition.imports.map( getImportPath ).concat( definition.modules );
 
@@ -16,7 +16,12 @@ export default function amd ( definition ) {
 	const code = `
 define([ ${paths.join( ', ' )} ], function ( ${args.join( ', ' )} ) {
 
-${body}
+var component = { exports: {} };
+
+${definition.script}
+${outro}
+
+return Ractive.extend( component.exports );
 
 });`.slice( 1 );
 

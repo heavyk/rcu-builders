@@ -1,8 +1,8 @@
-import createBody from '../utils/createBody';
+import createOutro from '../utils/createOutro';
 import deprecateToString from '../utils/deprecateToString';
 
 export default function cjs ( definition ) {
-	const body = createBody( definition, 'module.exports =' );
+	const outro = createOutro( definition );
 
 	const requires = definition.imports.map( ( imported, i ) => {
 		var path = imported.href.replace( /\.[a-zA-Z]+$/, '' );
@@ -13,7 +13,11 @@ export default function cjs ( definition ) {
 var Ractive = require('ractive');
 ${requires.join( '\n' )}
 
-${body}`.slice( 1 );
+var component = { exports: {} };
+${definition.script}
+${outro}
+
+module.exports = Ractive.extend( component.exports );`.slice( 1 );
 
 	// TODO sourcemap support
 
