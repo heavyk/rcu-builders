@@ -6,23 +6,19 @@ const quote = str => `"${str}"`;
 const getDependencyName = ( x, i ) => `__import${i}__`;
 
 export default function amd ( definition ) {
-	const { intro, body, outro } = createBody( definition );
+	const body = createBody( definition, 'return' );
 
 	const dependencies = definition.imports.map( getImportPath ).concat( definition.modules );
 
-	const code = '' +
-`define([
-	${dependencies.map( quote ).concat( '"require"', '"ractive"' ).join( ',\n\t' )}
-], function(
-	${dependencies.map( getDependencyName ).concat( 'require', 'Ractive' ).join( ',\n\t' )}
-){
+	const paths = dependencies.map( quote ).concat( '"require"', '"ractive"' );
+	const args = dependencies.map( getDependencyName ).concat( 'require', 'Ractive' );
 
-${intro}
+	const code = `
+define([ ${paths.join( ', ' )} ], function ( ${args.join( ', ' )} ) {
+
 ${body}
-${outro}
 
-	return __export__;
-});`;
+});`.slice( 1 );
 
 	// TODO sourcemap support
 

@@ -21,6 +21,8 @@ describe( 'rcu-builders', () => {
 			};
 		});
 
+	sander.rimrafSync( 'test/output' );
+
 	describe( 'amd', () => {
 		function load ( file ) {
 			return sander.readFile( file, { encoding: 'utf-8' })
@@ -28,11 +30,21 @@ describe( 'rcu-builders', () => {
 				.then( definition => {
 					const { code } = amd( definition );
 
+					sander.writeFileSync( file.replace( 'samples', 'output/amd' ).replace( '.html', '.js' ), code );
+
 					return new Promise( fulfil => {
+						function req ( relativePath ) {
+							const resolved = nodeResolve.sync( relativePath, {
+								base: path.dirname( file )
+							});
+
+							return require( resolved );
+						}
+
 						function define ( deps, callback ) {
 							const promises = deps.map( relativePath => {
 								if ( relativePath === 'require' ) {
-									return Promise.resolve({}); // TODO
+									return Promise.resolve( req );
 								}
 
 								let resolved;
@@ -42,7 +54,7 @@ describe( 'rcu-builders', () => {
 										base: path.dirname( file )
 									});
 
-									return Promise.resolve( require( resolved ) );
+									return require( resolved );
 								} catch ( err ) {
 									resolved = resolve( relativePath, file ) + '.html';
 									return load( resolved );
@@ -85,6 +97,8 @@ describe( 'rcu-builders', () => {
 					return Promise.all( importPromises )
 						.then( () => {
 							const { code } = cjs( definition );
+
+							sander.writeFileSync( file.replace( 'samples', 'output/cjs' ).replace( '.html', '.js' ), code );
 
 							const fn = new Function( 'module', 'exports', 'require', code );
 
@@ -133,6 +147,8 @@ describe( 'rcu-builders', () => {
 					return Promise.all( importPromises )
 						.then( () => {
 							let { code } = es6( definition );
+
+							sander.writeFileSync( file.replace( 'samples', 'output/es' ).replace( '.html', '.js' ), code );
 
 							code = transform( code, {
 								presets: [ 'es2015' ],

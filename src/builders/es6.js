@@ -3,7 +3,7 @@ import createBody from '../utils/createBody';
 import deprecateToString from '../utils/deprecateToString';
 
 export default function es6 ( definition, options = {} ) {
-	let { intro, body, outro } = createBody( definition );
+	let body = createBody( definition, 'export default' );
 
 	let imports = [ `import Ractive from 'ractive';` ];
 	let counter = 0;
@@ -29,44 +29,18 @@ export default function es6 ( definition, options = {} ) {
 			dependencies.push( `\t'${path}': __import${counter}__` );
 			counter += 1;
 		});
-
-		dependencyBlock =
-`(function () {
-	var __dependencies__ = {
-		${dependencies.join( ',\n\t' )}
-	};
-
-	var require = function ( path ) {
-		if ( __dependencies__.hasOwnProperty( path ) ) {
-			return __dependencies__[ path ];
-		}
-
-		throw new Error( 'Could not find required module "' + path + '"' );
-	}
-
-`;
-
-		outro += '\n})();\n\n';
 	}
 
 	const importBlock = imports.join( '\n' );
-	const exportBlock = 'export default __export__;';
 
 	const beforeScript = [
 		importBlock,
-		intro,
 		dependencyBlock
-	].join( '\n' );
-
-	const afterScript = [
-		outro,
-		exportBlock
 	].join( '\n' );
 
 	const code = [
 		beforeScript,
-		body,
-		afterScript
+		body
 	].join( '\n' );
 
 	const map = options.sourceMap ?

@@ -1,36 +1,24 @@
 import CleanCSS from 'clean-css';
 import toSource from 'tosource';
 
-export default function createBody ( definition ) {
-	var intro = '' +
-		'var __options__ = {\n' +
-		'	template: ' + toSource( definition.template, null, '' ) + ',\n' +
-		( definition.css ?
-		'	css:' + JSON.stringify( new CleanCSS().minify( definition.css ).styles ) + ',\n' : '' ) +
-		( definition.imports.length ?
-		'	components:{' + definition.imports.map( getImportKeyValuePair ).join( ',\n' ) + '}\n' : '' ) +
-		'},\n' +
-		'component={},\n' +
-		'__prop__,\n' +
-		'__export__;';
+export default function createBody ( definition, exportMechanism ) {
+	const css = definition.css ? new CleanCSS().minify( definition.css ).styles : '';
+	const imports = definition.imports.map( getImportKeyValuePair );
 
-	var body = definition.script;
+	return `
+var component = { exports: {} };
 
-	var outro = `if ( typeof component.exports === "object" ) {
-	for ( __prop__ in component.exports ) {
-		if ( component.exports.hasOwnProperty(__prop__) ) {
-			__options__[__prop__] = component.exports[__prop__];
-		}
-	}
-}
+${definition.script}
 
-__export__ = Ractive.extend( __options__ );\n`;
+component.exports.template = ${toSource( definition.template, null, '' )};
+component.exports.css = ${toSource( css )};
+component.exports.components = { ${imports.join( ', ')} };
 
-	return { intro, body, outro };
+${exportMechanism} Ractive.extend( component.exports );`.slice( 1 );
 }
 
 function getImportKeyValuePair ( imported, i ) {
-	return `\t${stringify(imported.name)}: __import${i}__`;
+	return `${stringify(imported.name)}: __import${i}__`;
 }
 
 function stringify ( key ) {
