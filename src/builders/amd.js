@@ -1,4 +1,4 @@
-import createBody from '../utils/createBody';
+import createOutro from '../utils/createOutro';
 import deprecateToString from '../utils/deprecateToString';
 
 const getImportPath = imported => imported.href.replace( /\.[a-zA-Z]+$/, '' );
@@ -6,23 +6,24 @@ const quote = str => `"${str}"`;
 const getDependencyName = ( x, i ) => `__import${i}__`;
 
 export default function amd ( definition ) {
-	const { intro, body, outro } = createBody( definition );
+	const outro = createOutro( definition, '\t' );
 
 	const dependencies = definition.imports.map( getImportPath ).concat( definition.modules );
 
-	const code = '' +
-`define([
-	${dependencies.map( quote ).concat( '"require"', '"ractive"' ).join( ',\n\t' )}
-], function(
-	${dependencies.map( getDependencyName ).concat( 'require', 'Ractive' ).join( ',\n\t' )}
-){
+	const paths = dependencies.map( quote ).concat( '"require"', '"ractive"' );
+	const args = dependencies.map( getDependencyName ).concat( 'require', 'Ractive' );
 
-${intro}
-${body}
+	const code = `
+define([ ${paths.join( ', ' )} ], function ( ${args.join( ', ' )} ) {
+
+	var component = { exports: {} };
+
+${definition.script}
 ${outro}
 
-	return __export__;
-});`;
+	return Ractive.extend( component.exports );
+
+});`.slice( 1 );
 
 	// TODO sourcemap support
 
