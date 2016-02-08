@@ -1,16 +1,16 @@
 import CleanCSS from 'clean-css';
 import toSource from 'tosource';
 
-export default function createOutro ( definition ) {
+export default function createOutro ( definition, indent = '' ) {
 	const css = definition.css ? new CleanCSS().minify( definition.css ).styles : '';
 	const imports = definition.imports.map( getImportKeyValuePair );
 
 	let outro = [
-		`component.exports.template = ${toSource( definition.template, null, '' )};`
+		`${indent}component.exports.template = ${toSource( definition.template, null, '' )};`
 	];
 
-	if ( css ) outro.push( `component.exports.css = ${toSource( css )};` );
-	if ( imports.length ) outro.push( `component.exports.components = { ${imports.join( ', ')} };` );
+	if ( css ) outro.push( `${indent}component.exports.css = ${toSource( css )};` );
+	if ( imports.length ) outro.push( `${indent}component.exports.components = { ${imports.join( ', ')} };` );
 
 	return outro.join( '\n' );
 }

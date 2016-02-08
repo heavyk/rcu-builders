@@ -6,7 +6,7 @@ const quote = str => `"${str}"`;
 const getDependencyName = ( x, i ) => `__import${i}__`;
 
 export default function amd ( definition ) {
-	const outro = createOutro( definition );
+	const outro = createOutro( definition, '\t' );
 
 	const dependencies = definition.imports.map( getImportPath ).concat( definition.modules );
 
@@ -16,12 +16,12 @@ export default function amd ( definition ) {
 	const code = `
 define([ ${paths.join( ', ' )} ], function ( ${args.join( ', ' )} ) {
 
-var component = { exports: {} };
+	var component = { exports: {} };
 
 ${definition.script}
 ${outro}
 
-return Ractive.extend( component.exports );
+	return Ractive.extend( component.exports );
 
 });`.slice( 1 );
 
