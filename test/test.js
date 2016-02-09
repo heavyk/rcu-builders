@@ -54,7 +54,7 @@ describe( 'rcu-builders', () => {
 
 								try {
 									resolved = nodeResolve.sync( relativePath, {
-										base: path.dirname( file )
+										basedir: path.dirname( file )
 									});
 
 									return require( resolved );
