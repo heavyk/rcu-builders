@@ -1,5 +1,10 @@
 # changelog
 
+## 0.5.0
+
+* Cleaner generated code
+* A test suite!
+
 ## 0.4.1
 
 * Update rcu
