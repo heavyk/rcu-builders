@@ -38,7 +38,7 @@ describe( 'rcu-builders', () => {
 					return new Promise( fulfil => {
 						function req ( relativePath ) {
 							const resolved = nodeResolve.sync( relativePath, {
-								base: path.dirname( file )
+								basedir: path.dirname( file )
 							});
 
 							return require( resolved );
@@ -54,7 +54,7 @@ describe( 'rcu-builders', () => {
 
 								try {
 									resolved = nodeResolve.sync( relativePath, {
-										base: path.dirname( file )
+										basedir: path.dirname( file )
 									});
 
 									return require( resolved );
@@ -111,7 +111,7 @@ describe( 'rcu-builders', () => {
 								if ( components[ resolved ] ) return components[ resolved ];
 
 								resolved = nodeResolve.sync( relativePath, {
-									base: path.dirname( file )
+									basedir: path.dirname( file )
 								});
 
 								return require( resolved );
@@ -166,7 +166,7 @@ describe( 'rcu-builders', () => {
 								if ( components[ resolved ] ) return components[ resolved ];
 
 								resolved = nodeResolve.sync( relativePath, {
-									base: path.dirname( file )
+									basedir: path.dirname( file )
 								});
 
 								return require( resolved );
