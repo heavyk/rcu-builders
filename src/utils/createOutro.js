@@ -3,7 +3,7 @@ import toSource from 'tosource';
 
 export default function createOutro ( definition, indent = '' ) {
 	const css = definition.css ? new CleanCSS().minify( definition.css ).styles : '';
-	const imports = definition.imports.map( getImportKeyValuePair );
+	const imports = definition.imports.map( ( imported, i ) => `${stringify(imported.name)}: __import${definition.modules.length + i}__` );
 
 	let outro = [
 		`${indent}component.exports.template = ${toSource( definition.template, null, '' )};`
@@ -13,10 +13,6 @@ export default function createOutro ( definition, indent = '' ) {
 	if ( imports.length ) outro.push( `${indent}component.exports.components = { ${imports.join( ', ')} };` );
 
 	return outro.join( '\n' );
-}
-
-function getImportKeyValuePair ( imported, i ) {
-	return `${stringify(imported.name)}: __import${i}__`;
 }
 
 function stringify ( key ) {
