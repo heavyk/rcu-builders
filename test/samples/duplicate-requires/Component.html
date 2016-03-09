@@ -1,10 +1,15 @@
 <script>
 	var foo = require('./x').foo;
 	var bar = require('./x').bar;
+	var x = require('./x');
+	var x = require('./x');
 
 	component.exports = {
 		data: function () {
-			return { foo: foo, bar: bar };
+			return { foo: foo, bar: bar, x: x };
+		},
+		decorators: {
+			deco: require( './x' )
 		}
 	};
 </script>
