@@ -1,15 +1,18 @@
 <script>
 	var foo = require('./x').foo;
 	var bar = require('./x').bar;
+	var baz = require('./y').baz;
 	var x = require('./x');
 	var x = require('./x');
+	var y = require('./y');
 
 	component.exports = {
 		data: function () {
-			return { foo: foo, bar: bar, x: x };
+			return { foo: foo, bar: bar, baz: baz, x: x };
 		},
 		decorators: {
-			deco: require( './x' )
+			deco: require( './x' ),
+			ration: require( './y' )
 		}
 	};
 </script>
