@@ -1,13 +1,13 @@
 {
   "name": "rcu-builders",
   "description": "Utilities to convert Ractive component files into JavaScript modules",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "author": "Rich Harris",
   "license": "MIT",
   "repository": "https://github.com/ractivejs/rcu-builders",
   "dependencies": {
     "clean-css": "^3.4.9",
-    "rcu": "^0.6.1",
+    "rcu": "^0.8.1",
     "tosource": "^1.0.0"
   },
   "main": "dist/rcu-builders.cjs.js",
