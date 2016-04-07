@@ -34,6 +34,7 @@ export default function es6 ( definition, options = {} ) {
 
 	const beforeScript = [
 		importBlock,
+		`// component: ${definition.name}`,
 		'var component = { exports: {} };'
 	].join( '\n' );
 
